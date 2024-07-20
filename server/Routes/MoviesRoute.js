@@ -1,5 +1,4 @@
 import { Router } from 'express'
-
 import { admin, protect } from '../middlewares/Auth.js'
 import * as movieController from '../Controllers/MovieController.js'
 
@@ -16,6 +15,9 @@ router.get('/random/all', movieController.getRandomMovies)
 router.post('/:id/reviews', protect, movieController.createMovieReview)
 
 // Admin routes
-
+router.put('/:id', protect, admin, movieController.updateMovie )
+router.delete('/:id', protect, admin, movieController.deleteMovie )
+router.delete('/', protect, admin, movieController.deleteAllMovies )
+router.post('/', protect, admin, movieController.createMovie )
 
 export default router

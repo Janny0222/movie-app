@@ -142,11 +142,117 @@ const createMovieReview = asyncHandler(async (req, res) => {
     }
 })
 
-// remove movie review
-// route DELETE /api/movies/:id/review
-// private access
+// ********* ADMIN CONTROLLERS *********
 
+// udate movie
+// route PUT /api/movies/:id
+// private/admin access
+const updateMovie = asyncHandler(async (req, res) => {
+    try {
+        const {name, desc, image, titleImage, rate, numberOfReviews, category, time, language, year, video, cast} = req.body
 
+        const movie = await Movie.findById(req.params.id)
 
+        if (movie) {
+            movie.name = name || movie.name
+            movie.desc = desc || movie.desc
+            movie.image = image || movie.image
+            movie.titleImage = titleImage || movie.titleImage
+            movie.rate = rate || movie.rate
+            movie.numberOfReviews = numberOfReviews || movie.numberOfReviews
+            movie.category = category || movie.category
+            movie.time = time || movie.time
+            movie.language = language || movie.language
+            movie.year = year || movie.year
+            movie.video = video || movie.video
+            movie.cast = cast || movie.cast
 
-export { importMovies, getMovies, getMovieById, getTopRatedMovies, getRandomMovies, createMovieReview }
+            // save the movie in the database
+            const updatedMovie = await movie.save()
+
+            // send the updated movie to the client
+            res.status(201).json(updatedMovie)
+        } else {
+            res.status(404);
+            throw new Error(`Movie not found`)
+        }
+        
+    } catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
+
+// delete specific movie
+// route DELETE /api/movies/:id
+// private/admin access
+const deleteMovie = asyncHandler(async (req, res) => {
+    try {
+        // find movie in database
+        const movie = await Movie.findById(req.params.id)
+
+        // delete movie from database if exists
+        if(movie) {
+            await movie.deleteOne()
+            res.json({message: 'Movie removed successfully'})
+        } else {
+        // send error if movie not found
+            res.status(404)
+            throw new Error(`Movie not found`)
+        }
+    } catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
+
+// delete all movies
+// route DELETE /api/movies
+// private/admin access
+const deleteAllMovies = asyncHandler(async (req, res) => {
+    try {
+        // delete all movies from database
+        await Movie.deleteMany({})
+        res.json({message: 'All movies removed successfully'})
+    } catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
+
+// create movie
+// route POST /api/movies
+// private/admin access
+const createMovie = asyncHandler(async (req, res) => {
+    try {
+        const {name, desc, image, titleImage, rate, numberOfReviews, category, time, language, year, video, cast} = req.body
+
+        // create / post a new Movie
+        const movie = new Movie({
+            name,
+            desc,
+            image,
+            titleImage,
+            rate,
+            numberOfReviews,
+            category,
+            time,
+            language,
+            year,
+            video,
+            cast,
+            userId: req.user._id
+        })
+        if(movie) {
+            // save the movie in the database
+            const createdMovie = await movie.save()
+            // send the created movie to the client
+            res.status(201).json(createdMovie)
+        } else {
+            res.status(404)
+            throw new Error(`Invalid movie data`)
+        }
+        
+    } catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
+
+export { importMovies, getMovies, getMovieById, getTopRatedMovies, getRandomMovies, createMovieReview, updateMovie, deleteMovie, deleteAllMovies, createMovie }
